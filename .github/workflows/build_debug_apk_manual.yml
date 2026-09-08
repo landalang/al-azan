@@ -1,0 +1,63 @@
+name: build debug apk (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: cimg/android:2024.01.1-ndk
+      options: --user root
+
+    steps:
+      - name: install git
+        run: |
+          sudo apt-get update;
+          sudo apt-get -y install git;
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install yarn
+        run: npm install -g yarn
+
+      - name: Install packages
+        run: yarn install --frozen-lockfile
+
+      - name: patch notifee rn package
+        run: |
+          sed -E -i 's/^.*(fabric|com\.(crashlytics|google\.(firebase|android.gms))).*$//g' ./node_modules/@notifee/react-native/android/build.gradle
+
+      - name: Compile lingui.js locales
+        run: |
+          sed "s/<TRANSLATION_IO_APIKEY>//" lingui.config.js.example > lingui.config.js;
+          yarn lingui compile;
+
+      - name: Make Gradlew Executable
+        run: cd android && chmod +x ./gradlew
+
+      - name: build debug Apk (debug-signed, installable directly)
+        run: |
+          cd android
+          ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: al-azan-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 14
