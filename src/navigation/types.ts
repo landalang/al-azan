@@ -12,6 +12,7 @@ export type RootStackParamList = {
   NotificationSettings: undefined;
   NotificationAdvancedSettings: undefined;
   AdhanSettings: undefined;
+  WeeklyAdhanSettings: undefined;
   CalculationSettings: undefined;
   CalculationAdjustmentsSettings: undefined;
   CalculationAdvancedSettings: undefined;
@@ -80,6 +81,11 @@ const routeTranslations = {
   AdhanSettings: defineMessage({
     id: 'muezzin_settings',
     message: 'Muezzin',
+    comment: 'screen title',
+  }),
+  WeeklyAdhanSettings: defineMessage({
+    id: 'weekly_adhan_settings',
+    message: 'Different Adhan Every Day',
     comment: 'screen title',
   }),
   CalculationSettings: defineMessage({
