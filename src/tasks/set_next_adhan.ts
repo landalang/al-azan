@@ -1,7 +1,7 @@
 import {t} from '@lingui/macro';
 import {AlarmType} from '@notifee/react-native';
 import {cancelAdhanAlarms} from './cancel_alarms';
-import {translatePrayer} from '@/adhan';
+import {Prayer, translatePrayer} from '@/adhan';
 import {getNextPrayer} from '@/adhan/prayer_times';
 import {
   ADHAN_NOTIFICATION_ID,
@@ -41,6 +41,8 @@ export async function setNextAdhan(
     DELIVERED_ALARM_TIMESTAMPS,
     SELECTED_ADHAN_ENTRIES,
     SAVED_ADHAN_AUDIO_ENTRIES,
+    WEEKLY_ADHAN_ENABLED,
+    WEEKLY_ADHAN_ENTRIES,
     USE_DIFFERENT_ALARM_TYPE,
     BYPASS_DND,
   } = settings.getState();
@@ -90,7 +92,14 @@ export async function setNextAdhan(
 
   let sound: AudioEntry | undefined = undefined;
   if (playSound) {
-    sound = (SELECTED_ADHAN_ENTRIES[prayer] ||
+    // for Fajr, prefer a per-weekday adhan if the user has that feature enabled
+    const weeklyEntry =
+      WEEKLY_ADHAN_ENABLED && prayer === Prayer.Fajr
+        ? WEEKLY_ADHAN_ENTRIES[date.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6]
+        : undefined;
+
+    sound = (weeklyEntry ||
+      SELECTED_ADHAN_ENTRIES[prayer] ||
       SELECTED_ADHAN_ENTRIES['default']) as AudioEntry;
 
     if (!sound) {
