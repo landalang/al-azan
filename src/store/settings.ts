@@ -19,12 +19,16 @@ import {
 import {ADHAN_NOTIFICATION_ID} from '@/constants/notification';
 import type {AudioEntry} from '@/modules/media_player';
 import {PREFERRED_LOCALE} from '@/utils/locale';
+import {WeekDayIndex} from '@/utils/date';
 
 export const SETTINGS_STORAGE_KEY = 'SETTINGS_STORAGE';
 
 type SelectedAdhanEntries = {[key in Prayer]?: AdhanEntry | undefined} & {
   default: AdhanEntry;
 };
+
+/** maps a weekday (0=Sunday..6=Saturday) to the adhan that should play that day */
+export type WeeklyAdhanEntries = Partial<Record<WeekDayIndex, AdhanEntry>>;
 
 export type SettingsStore = {
   /** an object that keeps track of dismissed alarms timestamp by their notification id */
@@ -45,6 +49,11 @@ export type SettingsStore = {
   SAVED_ADHAN_AUDIO_ENTRIES: AdhanEntry[];
   SAVED_USER_AUDIO_ENTRIES: AudioEntry[];
   SELECTED_ADHAN_ENTRIES: SelectedAdhanEntries;
+  /** when true, Fajr will cycle through WEEKLY_ADHAN_ENTRIES based on the day of week
+   * instead of always using SELECTED_ADHAN_ENTRIES[Prayer.Fajr] */
+  WEEKLY_ADHAN_ENABLED: boolean;
+  /** a different adhan per weekday, used for Fajr when WEEKLY_ADHAN_ENABLED is true */
+  WEEKLY_ADHAN_ENTRIES: WeeklyAdhanEntries;
   // LOCATION_COUNTRY: CountryInfo | undefined; // moved to calculation store
   // LOCATION_CITY: CityInfo | undefined; // moved to calculation store
   LAST_APP_FOCUS_TIMESTAMP?: number;
@@ -101,6 +110,10 @@ export type SettingsStore = {
     entry: AdhanEntry | undefined,
   ) => void;
   resetPrayerAdhans: (entry: AdhanEntry | undefined) => void;
+  setWeeklyAdhanEntry: (
+    weekday: WeekDayIndex,
+    entry: AdhanEntry | undefined,
+  ) => void;
   saveAudioEntry: (entry: AudioEntry) => void;
   deleteAudioEntry: (entry: AudioEntry) => void;
   saveTimestamp: (alarmId: string, timestamp: number) => void;
@@ -136,6 +149,8 @@ export const settings = createStore<SettingsStore>()(
       SAVED_ADHAN_AUDIO_ENTRIES: INITIAL_ADHAN_AUDIO_ENTRIES,
       SAVED_USER_AUDIO_ENTRIES: [],
       SELECTED_ADHAN_ENTRIES: {default: INITIAL_ADHAN_AUDIO_ENTRIES[0]},
+      WEEKLY_ADHAN_ENABLED: false,
+      WEEKLY_ADHAN_ENTRIES: {},
       LOCATION_COUNTRY: undefined,
       LOCATION_CITY: undefined,
       HIDDEN_PRAYERS: [Prayer.Tahajjud],
@@ -225,6 +240,25 @@ export const settings = createStore<SettingsStore>()(
                 draft.SELECTED_ADHAN_ENTRIES[prayer] =
                   draft.SELECTED_ADHAN_ENTRIES['default'];
               }
+            }
+
+            for (const weekday of Object.keys(
+              draft.WEEKLY_ADHAN_ENTRIES,
+            ) as unknown as WeekDayIndex[]) {
+              if (draft.WEEKLY_ADHAN_ENTRIES[weekday]?.id === entry.id) {
+                delete draft.WEEKLY_ADHAN_ENTRIES[weekday];
+              }
+            }
+          }),
+        ),
+
+      setWeeklyAdhanEntry: (weekday, entry) =>
+        set(
+          produce<SettingsStore>(draft => {
+            if (entry) {
+              draft.WEEKLY_ADHAN_ENTRIES[weekday] = entry;
+            } else {
+              delete draft.WEEKLY_ADHAN_ENTRIES[weekday];
             }
           }),
         ),
