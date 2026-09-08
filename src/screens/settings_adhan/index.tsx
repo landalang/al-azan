@@ -96,6 +96,12 @@ export function AdhanSettings(props: IStackProps & AdhanSettingsProps) {
       <SafeArea>
         <ScrollView>
           <Stack flex={1} px="4" py="2" {...props}>
+            <Button
+              variant="outline"
+              mb="3"
+              onPress={() => navigation.navigate('WeeklyAdhanSettings')}>
+              {t`Different Adhan Every Day (Fajr)`}
+            </Button>
             {PrayersInOrder.map(prayer => (
               <PrayerAdhan
                 prayer={prayer}
@@ -203,6 +209,13 @@ export function AdhanSettings(props: IStackProps & AdhanSettingsProps) {
   return (
     <SafeArea>
       <Stack flex={1} pt="4" {...props}>
+        <Button
+          variant="outline"
+          mx="1"
+          mb="2"
+          onPress={() => navigation.navigate('WeeklyAdhanSettings')}>
+          {t`Different Adhan Every Day (Fajr)`}
+        </Button>
         <FlatList
           flex={1}
           data={SAVED_ADHAN_AUDIO_ENTRIES}
