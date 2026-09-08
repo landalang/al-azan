@@ -34,6 +34,7 @@ import {QiblaMap} from '@/screens/qibla_finder_map';
 import Settings from '@/screens/settings';
 import {AboutSettings} from '@/screens/settings_about';
 import {AdhanSettings} from '@/screens/settings_adhan';
+import {WeeklyAdhanSettings} from '@/screens/settings_adhan/weekly_adhan';
 import {BackupSettings} from '@/screens/settings_backup';
 import {CalculationSettings} from '@/screens/settings_calculation';
 import {DevSettings} from '@/screens/settings_dev';
@@ -186,6 +187,10 @@ export function App(): React.JSX.Element {
             name="AdhanSettings"
             component={AdhanSettings}
             options={{headerRight: SettingsAdhanHeaderRight}}
+          />
+          <Stack.Screen
+            name="WeeklyAdhanSettings"
+            component={WeeklyAdhanSettings}
           />
           <Stack.Screen
             name="CalculationSettings"
